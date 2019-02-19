@@ -2,7 +2,7 @@ input {
   name: 'craft-parser-in'
   record_format: 'conll-sentence'
   Part {
-    file_pattern: '*.out.conll'
+    file_pattern: '/syntaxnet-input/*.out.conll'
   }
 }
 input {
@@ -16,7 +16,7 @@ input {
   name: 'craft-tagger-in'
   record_format: 'english-text'
   Part {
-    file_pattern: '*.txt'
+    file_pattern: '/syntaxnet-input/*.txt'
   }
 }
 input {
