@@ -12,6 +12,13 @@ Files are expected to contain sentences (one per line). To process a directory o
 docker run --rm -v /path/on/host/to/sentence/files/directory:/syntaxnet-input ucdenverccp/syntaxnet:latest
 ```
 
-SyntaxNet output will be written to the same directory. Output files will be appended with the `.conll` suffix. 
+SyntaxNet output will be written to the same directory. Output files will be appended with the `.conll` suffix.
+
+### Use a model trained on the CRAFT corpus
+To use a model trained on the [CRAFT corpus](https://github.com/UCDenver-ccp/craft), add the following parameters: `-m craft`, e.g.
+```bash
+docker run --rm -v /path/on/host/to/sentence/files/directory:/syntaxnet-input ucdenverccp/syntaxnet:latest -m craft
+```
+
 
 
