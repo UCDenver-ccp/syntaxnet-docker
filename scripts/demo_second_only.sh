@@ -23,37 +23,62 @@
 # To run on a conll formatted file, add the --conll command line argument.
 #
 
+function print_usage {
+    echo "Usage:"
+    echo "$(basename $0) [OPTIONS]"
+    echo "  [-m <model-indicator>]: Optional argument. If left blank, the default SyntaxNet model is used. If 'craft', a model trained on the CRAFT corpus is used."
+}
+
+while getopts "m:h" OPTION; do
+    case ${OPTION} in
+        # An indicator for the model to use
+        m) MODEL=$OPTARG
+           ;;
+        # HELP!
+        h) print_usage; exit 0
+           ;;
+    esac
+done
+
+# assume default model if not specified
+if [[ -z ${MODEL} ]]; then
+    MODEL="default"
+fi
+
+echo "------ SyntaxNet using ${MODEL} model. ------"
+
+if [ ${MODEL} = "default" ]; then
+    MODEL_DIR="syntaxnet/models/parsey_mcparseface"
+    HIDDEN_LAYER_SIZES="512,512"
+    ARG_PREFIX="brain_parser"
+    GRAPH_BUILDER="structured"
+    TASK_CONTEXT="${MODEL_DIR}/context.pbtxt"
+    MODEL_PATH="${MODEL_DIR}/parser-params"
+elif [ ${MODEL} = "craft" ]; then
+    MODEL_DIR="/opt/tensorflow/syntaxnet/syntaxnet/models/brain_parser/structured/200x200-0.02-100-0.9-0"
+    HIDDEN_LAYER_SIZES="200,200"
+    ARG_PREFIX="brain_parser"
+    GRAPH_BUILDER="structured"
+    TASK_CONTEXT="${MODEL_DIR}/context2"
+    MODEL_PATH="${MODEL_DIR}/model"
+else
+    echo "Parameters for specified model (${MODEL}) not available. Valid models are 'default' and 'craft'. Exiting..."
+    exit 1
+fi
+
 PARSER_EVAL=bazel-bin/syntaxnet/parser_eval
 
-MODEL_DIR=syntaxnet/models/parsey_mcparseface
 [[ "$1" == "--conll" ]] && INPUT_FORMAT=stdin-conll || INPUT_FORMAT=stdin
 OUTPUT_FORMAT=stdout-conll
 
-
-#$PARSER_EVAL \
-#  --input=craft-tagger-in \
-#  --output=craft-tagger-out \
-#  --hidden_layer_sizes=64 \
-#  --arg_prefix=brain_tagger \
-#  --graph_builder=structured \
-#  --task_context=$MODEL_DIR/context.pbtxt \
-#  --model_path=$MODEL_DIR/tagger-params \
-#  --slim_model \
-#  --batch_size=1024 \
-#  --alsologtostderr \
-#   | \
   $PARSER_EVAL \
   --input=craft-parser-in \
   --output=craft-parser-out \
-  --hidden_layer_sizes=512,512 \
-  --arg_prefix=brain_parser \
-  --graph_builder=structured \
-  --task_context=$MODEL_DIR/context.pbtxt \
-  --model_path=$MODEL_DIR/parser-params \
+  --hidden_layer_sizes=${HIDDEN_LAYER_SIZES} \
+  --arg_prefix=${ARG_PREFIX} \
+  --graph_builder=${GRAPH_BUILDER} \
+  --task_context=${TASK_CONTEXT} \
+  --model_path=${MODEL_PATH} \
   --slim_model \
   --batch_size=1024 \
-  --alsologtostderr \
-#  | \
-#  bazel-bin/syntaxnet/conll2tree \
-#  --task_context=$MODEL_DIR/context.pbtxt \
-#  --alsologtostderr
+  --alsologtostderr
